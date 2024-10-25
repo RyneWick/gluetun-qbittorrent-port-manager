@@ -1,6 +1,8 @@
 #!/bin/bash
 
 COOKIES="/tmp/cookies.txt"
+PORT_PATH=$(dirname $PORT_FORWARDED)
+PORT_FILE=$(basename $PORT_FORWARDED)
 
 update_port () {
   PORT=$(cat $PORT_FORWARDED)
@@ -14,8 +16,10 @@ update_port () {
 while true; do
   if [ -f $PORT_FORWARDED ]; then
     update_port
-    inotifywait -mq -e close_write $PORT_FORWARDED | while read change; do
-      update_port
+    inotifywait -mq -e close_write --format '%f' $PORT_PATH | while read FILE; do
+      if [ $FILE == $PORT_FILE ]; then
+        update_port
+      fi
     done
   else
     echo "Couldn't find file $PORT_FORWARDED"
